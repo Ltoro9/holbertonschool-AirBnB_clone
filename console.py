@@ -60,10 +60,6 @@ class HBNBCommand(cmd.Cmd):
             return
         class_name = args[0]
 
-        # if class_name != "User":
-        #     print("** class doesn't exist **")
-        #     return
-
         if class_name == "BaseModel":
             new_base = BaseModel()
             new_base.save()
@@ -120,9 +116,7 @@ class HBNBCommand(cmd.Cmd):
             print("** class name missing **")
             return
         class_name = args[0]
-        # if class_name != "User":
-        #     print("** class doesn't exist **")
-        #     return
+
         if len(args) < 2:
             print("** instance id missing **")
             return
@@ -165,8 +159,8 @@ class HBNBCommand(cmd.Cmd):
         if key not in objs:
             print("** no instance found **")
             return
-        #print the string representation
-        print(f"[{args[0]}] ({args[1]}) {objs[key]}")
+
+        print(f"[{args[0]}] ({args[1]}) {objs[key]}")  # Print str repr.
 
     def do_destroy(self, arg):
         '''
@@ -177,9 +171,7 @@ class HBNBCommand(cmd.Cmd):
             print("** class name missing **")
             return
         class_name = args[0]
-        # if class_name != "User":
-        #     print("** class doesn't exist **")
-        #     return
+
         if len(args) < 2:
             print("** instance id missing **")
             return
@@ -199,7 +191,7 @@ class HBNBCommand(cmd.Cmd):
         '''
             Prints all string representations of User or BaseModel instances
         '''
-        if not arg:  # If no argument provided, print all instances
+        if not arg:  # If no arg provided, print all instances
             with open('file.json', 'r') as file:
                 objs_dict = json.load(file)
                 for key, dictionary in objs_dict.items():
@@ -225,7 +217,7 @@ class HBNBCommand(cmd.Cmd):
 
     def do_update(self, arg):
         args = shlex.split(arg)
-        args = args[:4]  # Ensure only first 4 arguments are used
+        args = args[:4]  # Only first 4 arguments are used
 
         if len(args) == 0:
             print('** class name missing **')
@@ -262,9 +254,9 @@ class HBNBCommand(cmd.Cmd):
             print('** value missing **')
             return
 
-        attr_value = " ".join(args[3:])  # Handle attribute value with spaces
+        attr_value = " ".join(args[3:])  # Handle attr value with spaces
         obj_dict = data[key]
-        obj_dict[attr_name] = attr_value  # Update attribute in the dictionary
+        obj_dict[attr_name] = attr_value  # Update attr in the dictionary
 
         with open("file.json", "w") as file:
             json.dump(data, file)
@@ -272,9 +264,10 @@ class HBNBCommand(cmd.Cmd):
         # Construct the string representation
         obj_repr = f"[{class_name}] ({obj_id}) {obj_dict}"
 
-        # Save the string representation in file
+        # Save the str repr in file
         with open("updated_instances.txt", "a") as file:
             file.write(obj_repr + "\n")
+
 
 if __name__ == '__main__':
     HBNBCommand().cmdloop()
