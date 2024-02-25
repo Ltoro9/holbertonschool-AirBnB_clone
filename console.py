@@ -39,9 +39,14 @@ class HBNBCommand(cmd.Cmd):
             Handle EOF
         '''
         try:
+            with open('file.json', 'r') as file:
+                self.objects = json.load(file)
             super().cmdloop()
         except KeyboardInterrupt:
             return True
+        finally:
+            with open('file.json', 'w') as file:
+                json.dump(self.objects, file)
 
     def emptyline(self):
         '''
@@ -51,7 +56,7 @@ class HBNBCommand(cmd.Cmd):
 
     def do_create(self, arg):
         '''
-            Creates a new instance of User
+            Creates a new instance of a class
         '''
         args = arg.split()
         if not args:
@@ -59,40 +64,13 @@ class HBNBCommand(cmd.Cmd):
             return
         class_name = args[0]
 
-        if class_name == "BaseModel":
-            new_base = BaseModel()
-            new_base.save()
-            print(new_base.id)
+        if class_name not in globals():
+            print("** class doesn't exist **")
+            return
 
-        if class_name == "User":
-            new_user = User()
-            new_user.save()
-            print(new_user.id)
-
-        if class_name == "Amenity":
-            new_user = Amenity()
-            new_user.save()
-            print(new_user.id)
-
-        if class_name == "City":
-            new_user = City()
-            new_user.save()
-            print(new_user.id)
-
-        if class_name == "Place":
-            new_user = Place()
-            new_user.save()
-            print(new_user.id)
-
-        if class_name == "Review":
-            new_user = Review()
-            new_user.save()
-            print(new_user.id)
-
-        if class_name == "State":
-            new_user = State()
-            new_user.save()
-            print(new_user.id)
+        new_instance = globals()[class_name]()
+        new_instance.save()
+        print(new_instance.id)
 
     def all(self):
         '''
@@ -108,9 +86,9 @@ class HBNBCommand(cmd.Cmd):
 
     def do_show(self, arg):
         '''
-            Prints the string representation of a User instance
+             Prints the string representation of an instance
         '''
-        args = arg.split()
+        args = shlex.split(arg)
         if not args:
             print("** class name missing **")
             return
@@ -120,52 +98,24 @@ class HBNBCommand(cmd.Cmd):
             print("** instance id missing **")
             return
 
-        if class_name == "BaseModel":
-            Base_id = args[1]
-            objs = self.all()
-            key = class_name + "." + Base_id
-
-        if class_name == "User":
-            user_id = args[1]
-            objs = self.all()
-            key = class_name + "." + user_id
-
-        if class_name == "Amenity":
-            user_id = args[1]
-            objs = self.all()
-            key = class_name + "." + user_id
-
-        if class_name == "City":
-            user_id = args[1]
-            objs = self.all()
-            key = class_name + "." + user_id
-
-        if class_name == "Place":
-            user_id = args[1]
-            objs = self.all()
-            key = class_name + "." + user_id
-
-        if class_name == "Review":
-            user_id = args[1]
-            objs = self.all()
-            key = class_name + "." + user_id
-
-        if class_name == "State":
-            user_id = args[1]
-            objs = self.all()
-            key = class_name + "." + user_id
-
+        obj_id = args[1]
+        objs = self.all()
+        key = class_name + "." + obj_id
         if key not in objs:
             print("** no instance found **")
             return
 
-        print(f"[{args[0]}] ({args[1]}) {objs[key]}")  # Print str repr.
+        if class_name not in ['User', 'Amenity', 'City', 'Place', 'Review', 'State']:
+            print("** class doesn't exist **")
+            return
+
+        print(objs[key])  # Print str repr.
 
     def do_destroy(self, arg):
         '''
-            Deletes a User instance based on the id
+                Deletes an instance based on the class name and id
         '''
-        args = arg.split()
+        args = shlex.split(arg)
         if not args:
             print("** class name missing **")
             return
@@ -175,11 +125,15 @@ class HBNBCommand(cmd.Cmd):
             print("** instance id missing **")
             return
 
-        user_id = args[1]
+        obj_id = args[1]
         objs = self.all()
-        key = class_name + "." + user_id
+        key = class_name + "." + obj_id
         if key not in objs:
             print("** no instance found **")
+            return
+
+        if class_name not in ['User', 'Amenity', 'City', 'Place', 'Review', 'State']:
+            print("** class doesn't exist **")
             return
 
         del objs[key]
@@ -190,7 +144,7 @@ class HBNBCommand(cmd.Cmd):
         '''
             Prints all string representations of User or BaseModel instances
         '''
-        if not arg:  # If no arg provided, print all instances
+        if not arg:  # If no arg print all instances
             with open('file.json', 'r') as file:
                 objs_dict = json.load(file)
                 for key, dictionary in objs_dict.items():
@@ -215,6 +169,9 @@ class HBNBCommand(cmd.Cmd):
                     print("** class doesn't exist **")
 
     def do_update(self, arg):
+        '''
+            Update instance based on the class name and id
+        '''
         args = shlex.split(arg)
         args = args[:4]  # Only first 4 arguments are used
 
@@ -233,6 +190,7 @@ class HBNBCommand(cmd.Cmd):
         obj_id = args[1]
 
         try:
+
             with open("file.json", "r") as file:
                 data = json.load(file)
         except FileNotFoundError:
@@ -255,15 +213,14 @@ class HBNBCommand(cmd.Cmd):
 
         attr_value = " ".join(args[3:])  # Handle attr value with spaces
         obj_dict = data[key]
-        obj_dict[attr_name] = attr_value  # Update attr in the dictionary
+        obj_dict[attr_name] = attr_value  # Update attr
 
         with open("file.json", "w") as file:
             json.dump(data, file)
 
-        # Construct the string representation
+        # Construct the str repr
         obj_repr = f"[{class_name}] ({obj_id}) {obj_dict}"
 
-        # Save the str repr in file
         with open("updated_instances.txt", "a") as file:
             file.write(obj_repr + "\n")
 
